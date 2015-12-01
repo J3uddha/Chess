@@ -1,9 +1,5 @@
 require_relative "board"
 require_relative "display"
-require "byebug"
-
-
-
 
 class Chess
   attr_reader :white_king, :black_king, :hypo_move
@@ -30,12 +26,8 @@ class Chess
     end
   end
 
-
-
   def play
-    selected_piece = nil
-    start_pos = nil
-    finish_pos = nil
+    selected_piece, start_pos, finish_pos = nil, nil, nil
     while selected_piece.nil?
       @display.render(@board)
       puts "Select a piece"
@@ -44,10 +36,9 @@ class Chess
         selected_piece = @board.position(start_pos)
       end
     end
-
     while finish_pos.nil?
       @display.render(@board)
-      puts "Select where to move"
+      puts "Make your move"
       finish_pos = @display.get_input
     end
 
@@ -57,9 +48,6 @@ class Chess
   def move(arr)
     start_pos, finish_pos, selected_piece = arr
     result = false
-
-
-
     if selected_piece.valid_move?(start_pos, finish_pos)
       @hypo_move = [start_pos, finish_pos, selected_piece, @board.get_piece(finish_pos)]
       a,b = start_pos
@@ -68,7 +56,6 @@ class Chess
       @board.grid[x][y] = selected_piece
       result = true
     end
-
     result
   end
 
@@ -102,9 +89,6 @@ class Chess
     sleep(5)
     true
   end
-
-
-
 end
 
 if __FILE__ == $PROGRAM_NAME
