@@ -2,7 +2,7 @@ require_relative "board"
 require_relative "display"
 
 class Chess
-  attr_reader :white_king, :black_king, :hypo_move
+  attr_reader :white_king, :black_king, :hypothetical_move
   def initialize(board = Board.new)
 
     @board = board
@@ -10,7 +10,7 @@ class Chess
     @white_king = @board.position([7,4])
     @display = Display.new
 
-    @hypo_move = []
+    @hypothetical_move = [] #utility for verifying checkmate
     @game_over = false
   end
 
@@ -49,7 +49,12 @@ class Chess
     start_pos, finish_pos, selected_piece = arr
     result = false
     if selected_piece.valid_move?(start_pos, finish_pos)
-      @hypo_move = [start_pos, finish_pos, selected_piece, @board.get_piece(finish_pos)]
+      @hypothetical_move = [
+        start_pos,
+        finish_pos,
+        selected_piece,
+        @board.get_piece(finish_pos)
+      ]
       a,b = start_pos
       x,y = finish_pos
       @board.grid[a][b] = nil
@@ -59,36 +64,50 @@ class Chess
     result
   end
 
-  def revert_move
-    a,b = @hypo_move[0]
-    x,y = @hypo_move[1]
-    @board.grid[a][b] = @hypo_move[2]
-    @board.grid[x][y] = @hypo_move[3]
-  end
-
   def check_mate?(color)
+
+    # for every spot on the board
     @board.grid.each_with_index do |row, a|
       row.each_with_index do |piece, b|
+
+        # if there's a piece from the color in check
         if !piece.nil? && piece.color == color
+
+          # see if it can make a move somewhere
           (0..7).each do |x|
             (0..7).each do |y|
               if move([[a,b], [x,y], piece ])
+
+                # ...and get current player out of check
                 if @black_king.in_check?
-                  revert_move
+                  revert_hypothetical_move
                 else
-                  revert_move
+                  # it's not checkmate
+                  revert_hypothetical_move
                   return false
                 end
+
               end
             end
           end
+
         end
+
       end
     end
+
     puts "CHECKMATE"
     sleep(5)
     true
   end
+
+  def revert_hypothetical_move
+    a,b = @hypothetical_move[0]
+    x,y = @hypothetical_move[1]
+    @board.grid[a][b] = @hypothetical_move[2]
+    @board.grid[x][y] = @hypothetical_move[3]
+  end
+
 end
 
 if __FILE__ == $PROGRAM_NAME
